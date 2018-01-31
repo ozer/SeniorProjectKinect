@@ -22,21 +22,33 @@ while ishandle(himg)
     [depthMap, ~, depthMetaData] = getdata(depthVid);
     imshow(depthMap, [0 4096]);
     %%disp(depthMetaData.FrameNumber);
-
+    delete(findall(gcf,'type','annotation'));
+    
     if sum(depthMetaData.IsSkeletonTracked) > 0
         skeletonJoints = depthMetaData.JointDepthIndices(:, :, ...
             depthMetaData.IsSkeletonTracked);
-                
-        if skeletonJoints(8,2) < skeletonJoints(5,2)
-            disp('Özer kolunu kaldýrdý');
+        skeletonJointDepth = depthMetaData.JointWorldCoordinates(:, :, ...
+            depthMetaData.IsSkeletonTracked);
+        
+        if ( skeletonJoints(8,2) + 10 < skeletonJoints(5,2) || skeletonJoints(12,2) + 10 < skeletonJoints(9,2) )
+            annotation('textbox', [.2 .5 .3 .3], 'String', 'Hand is raised'...
+                , 'FitBoxToText', 'on');
+            
+            hold on;
+            plot(skeletonJoints(:,1), skeletonJoints(:,2), '*');
+            hold off;
+            
         end
-        
-        hold on;
-        plot(skeletonJoints(:,1), skeletonJoints(:,2), '*');
-        hold off;
-        
+        if ( skeletonJointDepth(8,3) < skeletonJointDepth(5,3) || skeletonJointDepth(12,3) < skeletonJointDepth(9,3) )
+            annotation('textbox', [.2 .6 .3 .3], 'String', 'Hand is on the front'...
+                , 'FitBoxToText', 'on');
+            
+            hold on;
+            plot(skeletonJoints(:,1), skeletonJoints(:,2), '*');
+            hold off;
+            
+        end
     end
 end
-
 stop(depthVid);
 
