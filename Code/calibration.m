@@ -12,7 +12,7 @@ start([rgbImage depthImage]);
 
 image_sym = fliplr(imgColor(:, :, 1:3));
 
-imwrite(uint8(image_sym), 'rgb_1_22.png');
+imwrite(uint8(image_sym), 'rgb_1_23.png');
 
 %% Calibration
 
