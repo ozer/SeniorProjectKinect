@@ -1,2 +1,3 @@
 ﻿  Device.cpp
+d:\desktop\projects\seniorprojectkinect\code\seniorprojectc++\seniorprojectc++\device.cpp(141): warning C4715: 'Device::initKinect': not all control paths return a value
   SeniorProjectC++.vcxproj -> D:\Desktop\Projects\SeniorProjectKinect\Code\SeniorProjectC++\Debug\SeniorProjectC++.exe
