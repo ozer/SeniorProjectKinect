@@ -529,6 +529,182 @@ void Device::saveFrame(IColorFrame *frame) {
 
 }
 
+void Device::drawJoints() {
+
+		if(bodyReader != nullptr){
+
+			IBodyFrame* bodyfra;
+
+			hResult = bodyReader->AcquireLatestFrame(&bodyfra);
+
+			if (SUCCEEDED(hResult)) {
+
+				IBody* bodies[BODY_COUNT] = { 0 };
+
+				printf("Body Frame has been captured \n ");
+
+				hResult = bodyfra->GetAndRefreshBodyData(_countof(bodies), bodies);
+
+				if (SUCCEEDED(hResult)) {
+
+					printf("Get and refresh body data succeeded ! \n ");
+
+					// Processing the body and joints !!
+
+					for (int bodyIndex = 0; bodyIndex < BODY_COUNT; bodyIndex++) {
+
+						IBody *body = bodies[bodyIndex];
+
+						//Get the tracking status for the body, if there is not any body tracked we will skip it
+
+						tracked = false;
+
+						hResult = body->get_IsTracked(&tracked);
+
+						if (FAILED(hResult) || tracked == false) {
+
+							printf("Tracked Status 0\n");
+
+							continue;
+
+						}
+
+						printf("Body index counter : %d \n", bodyIndex);
+
+						hResult = body->GetJoints(_countof(joints), joints);
+
+						if (SUCCEEDED(hResult)) {
+
+							printf("Heeeey we got some joints ! \n ");
+
+							// Joints 
+
+							const CameraSpacePoint &leftHandPos = joints[JointType_HandLeft].Position;
+							const int leftHandTrackingState = joints[JointType_HandLeft].TrackingState;
+
+							const CameraSpacePoint &rightHandPos = joints[JointType_HandRight].Position;
+							const int rightHandTrackingState = joints[JointType_HandRight].TrackingState;
+
+							const CameraSpacePoint &rightHandTip = joints[JointType_HandTipRight].Position;
+
+							const CameraSpacePoint &spineBase = joints[JointType_SpineBase].Position;
+							const CameraSpacePoint &spineMid = joints[JointType_SpineMid].Position;
+							const CameraSpacePoint &spineShoulder = joints[JointType_SpineShoulder].Position;
+
+							const CameraSpacePoint &headPos = joints[JointType_Head].Position;
+							const CameraSpacePoint &neckPos = joints[JointType_Neck].Position;
+
+							const CameraSpacePoint &rightShoulderPos = joints[JointType_ShoulderRight].Position;
+							const CameraSpacePoint &rightElbow = joints[JointType_ElbowRight].Position;
+							const CameraSpacePoint &rightWrist = joints[JointType_WristRight].Position;
+
+							const CameraSpacePoint &leftShoulderPos = joints[JointType_ShoulderLeft].Position;
+
+							ColorSpacePoint headPlot;
+							ColorSpacePoint neckPlot;
+							ColorSpacePoint rightShoulderPlot;
+							ColorSpacePoint spineMidPlot;
+							ColorSpacePoint spineBasePlot;
+							ColorSpacePoint rightElbowPlot;
+							ColorSpacePoint rightWristPlot;
+							ColorSpacePoint rightHandPlot;
+							ColorSpacePoint rightHandTipPlot;
+							// Head, Neck, Spine Mid, Spine Base, Right Shoulder, Right Elbow, Right Wrist, Right Hand, Right Hand Tip
+
+							mapper->MapCameraPointToColorSpace(headPos, &headPlot);
+							mapper->MapCameraPointToColorSpace(neckPos, &neckPlot);
+							mapper->MapCameraPointToColorSpace(spineMid, &spineMidPlot);
+							mapper->MapCameraPointToColorSpace(spineBase, &spineBasePlot);
+							mapper->MapCameraPointToColorSpace(rightShoulderPos, &rightShoulderPlot);
+							mapper->MapCameraPointToColorSpace(rightElbow, &rightElbowPlot);
+							mapper->MapCameraPointToColorSpace(rightWrist, &rightWristPlot);
+							mapper->MapCameraPointToColorSpace(rightHandPos, &rightHandPlot);
+							mapper->MapCameraPointToColorSpace(rightHandTip, &rightHandTipPlot);
+
+
+							if (colorReader != nullptr) {
+
+								printf("We got the color reader ! /n");
+
+								IFrameDescription *frameDesc;
+
+								INT frame_width;
+								INT frame_height;
+
+								IColorFrame *colorFrame = nullptr;
+
+								colorReader->AcquireLatestFrame(&colorFrame);
+
+								colorFrame->get_FrameDescription(&frameDesc);
+
+								frameDesc->get_Height(&frame_height);
+
+								frameDesc->get_Width(&frame_width);
+
+								frame_width = abs(frame_width);
+
+								frame_height = abs(frame_height);
+
+								ColorImageFormat imageFormat = ColorImageFormat_None;
+
+								hResult = colorFrame->get_RawColorImageFormat(&imageFormat);
+
+								Mat color_mat(this->color_h_, this->color_w_, CV_8UC4);
+
+								const int buf_size = color_h_ * color_w_ * sizeof(uint8_t) * 4;
+
+								chrono::milliseconds end = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
+								chrono::milliseconds begin = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
+								hResult = colorFrame->CopyConvertedFrameDataToArray(buf_size, color_mat.data, ColorImageFormat_Bgra);
+
+								rectangle(color_mat, cv::Rect((int)headPlot.X - 5, (int)headPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)neckPlot.X - 5, (int)neckPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)spineMidPlot.X - 5, (int)spineMidPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)spineBasePlot.X - 5, (int)spineBasePlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)rightShoulderPlot.X - 5, (int)rightShoulderPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)rightElbowPlot.X - 5, (int)rightElbowPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)rightWristPlot.X - 5, (int)rightWristPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)rightHandPlot.X - 5, (int)rightHandPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+								rectangle(color_mat, cv::Rect((int)rightHandTipPlot.X - 5, (int)rightHandTipPlot.Y - 5, 10, 10), cv::Scalar(0, 0, 255), 2);
+
+								imwrite("images/Joints.jpg", color_mat);
+
+								safeRelease(colorFrame);
+
+							}
+
+							// writeCSV(joints);
+
+						}
+
+					}
+
+					// Releasing body data extracted from body frame
+
+					for (unsigned int bodyIndex = 0; bodyIndex < _countof(bodies); bodyIndex++) {
+						safeRelease(bodies[bodyIndex]);
+					}
+
+					// Releasing body frame
+
+					safeRelease(bodyfra);
+
+				}
+
+				if (FAILED(hResult)) {
+
+					printf("Get and refresh body data is failed ! \n");
+
+				}
+
+			}
+			
+		}
+
+}
+
 Device::~Device()
 {
 	printf("Device is killed !");
