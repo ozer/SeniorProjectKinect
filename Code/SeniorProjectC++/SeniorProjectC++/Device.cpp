@@ -369,13 +369,36 @@ void Device::recordColorData() {
 
 			printf("Camera acquired color frame ! \n");
 
-			//saveFrame(colorfra);
+			saveFrame(colorfra);
 
 		}
 
 		safeRelease(colorfra);
 
 	}
+
+}
+
+void Device::imageAcquisitionToCalibrate() {
+
+	if (colorReader != nullptr) {
+
+		IColorFrame* colorFrame;
+
+		hResult = colorReader->AcquireLatestFrame(&colorFrame);
+
+		if (SUCCEEDED(hResult)) {
+
+			printf("Camera acquired color frame ! /n");
+
+			saveFrame(colorFrame);
+
+		}
+
+		safeRelease(colorFrame);
+
+	}
+		
 
 }
 
@@ -488,7 +511,13 @@ void Device::saveFrame(IColorFrame *frame) {
 
 	const int buf_size = color_h_ * color_w_ * sizeof(uint8_t) * 4;
 
+	chrono::milliseconds end = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
+	chrono::milliseconds begin = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
 	hResult = frame->CopyConvertedFrameDataToArray(buf_size, color_mat.data, ColorImageFormat_Bgra);
+
+	std::cout << "Time difference in microseconds = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
 
 	// cv::imshow("Color", color_mat);
 

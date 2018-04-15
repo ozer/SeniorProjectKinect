@@ -13,6 +13,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <future>
 
 using namespace std;
 using namespace cv;
@@ -74,6 +75,8 @@ public:
 	void saveData();
 
 	void saveFrame(IColorFrame *frame);
+
+	void imageAcquisitionToCalibrate();
 
 	void writeCSV(Joint *joints);
 
