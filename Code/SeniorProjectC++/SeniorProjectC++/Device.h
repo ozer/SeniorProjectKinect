@@ -82,6 +82,8 @@ public:
 
 	void captureAndShow();
 
+	void drawJoints();
+
 	~Device();
 
 };
