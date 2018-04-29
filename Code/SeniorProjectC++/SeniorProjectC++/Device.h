@@ -42,6 +42,11 @@ public:
 	static const int color_w_ = 1920;
 	static const int color_h_ = 1080;
 
+	RGBQUAD* m_pColorRGBX = new RGBQUAD[1920 * 1080];
+
+	const int cColorWidth = 1920;
+	const int cColorHeight = 1080;
+
 	UINT64 *trackingId;
 
 	uint64_t numMs;
@@ -75,6 +80,8 @@ public:
 	void saveData();
 
 	void saveFrame(IColorFrame *frame);
+
+	void saveFrameNew(IColorFrame *frame);
 
 	void imageAcquisitionToCalibrate();
 
