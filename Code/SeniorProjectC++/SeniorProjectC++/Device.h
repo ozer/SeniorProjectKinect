@@ -85,7 +85,7 @@ public:
 
 	void imageAcquisitionToCalibrate();
 
-	void writeCSV(Joint *joints);
+	void writeCSV(Joint *joints, int ctr);
 
 	void captureAndShow();
 

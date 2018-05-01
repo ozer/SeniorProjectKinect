@@ -38,18 +38,19 @@ bool Device::initKinect() {
 		fileHandler << "L Wrist" << ";";
 		fileHandler << "R Hand" << ";";
 		fileHandler << "L Hand" << ";";
-		fileHandler << "R Hand Tip" << ";";
-		fileHandler << "L Hand Tip" << ";";
-		fileHandler << "R Thumb" << ";";
-		fileHandler << "L Thumb" << ";";
-		fileHandler << "R Hip" << ";";
-		fileHandler << "L Hip" << ";";
-		fileHandler << "R Knee" << ";";
-		fileHandler << "L Knee" << ";";
-		fileHandler << "R Ankle" << ";";
-		fileHandler << "L Ankle" << ";";
+		// fileHandler << "R Hand Tip" << ";";
+		// fileHandler << "L Hand Tip" << ";";
+		// fileHandler << "R Thumb" << ";";
+		// fileHandler << "L Thumb" << ";";
+		// fileHandler << "R Hip" << ";";
+		// fileHandler << "L Hip" << ";";
+		// fileHandler << "R Knee" << ";";
+		// fileHandler << "L Knee" << ";";
+		// fileHandler << "R Ankle" << ";";
+		// fileHandler << "L Ankle" << ";";
 		fileHandler << "R Foot" << ";";
 		fileHandler << "L Foot" << ";";
+		fileHandler << "Frame No." << ";";
 		fileHandler << "\n";
 	}
 
@@ -273,6 +274,8 @@ void Device::recordBodyData() {
 
 	printf("We are going to acquire body frames \n");
 
+	int counter = 0;
+
 	while (bodyReader != nullptr)
 	{
 
@@ -293,7 +296,7 @@ void Device::recordBodyData() {
 				printf("Get and refresh body data succeeded ! \n ");
 
 				// Processing the body and joints !!
-
+				
 				for (int bodyIndex = 0; bodyIndex < BODY_COUNT; bodyIndex++) {
 
 					IBody *body = bodies[bodyIndex];
@@ -320,13 +323,52 @@ void Device::recordBodyData() {
 
 						printf("Heeeey we got some joints ! \n ");
 
-						writeCSV(joints);
+						// std::thread writeCSVThread(&Device::writeCSV, this, joints);
+
+						// writeCSVThread.join();
+
+						writeCSV(joints, counter);
+
+						counter++;
 
 					}
 
 				}
-
+				
 				// Releasing body data extracted from body frame
+
+				/*
+				cout << " Tracked body ! " << endl;
+
+				IBody *body = bodies[0];
+
+				tracked = false;
+
+				hResult = body->get_IsTracked(false);
+
+				if (FAILED(hResult) || tracked == false) {
+
+					printf("Tracked Status 0\n");
+
+					continue;
+
+				}
+
+				hResult = body->GetJoints(_countof(joints), joints);
+
+				if (SUCCEEDED(hResult)) {
+
+					printf("Heeeey we got some joints ! \n ");
+
+					// std::thread writeCSVThread(&Device::writeCSV, this, joints);
+
+					// writeCSVThread.join();
+
+					writeCSV(joints);
+
+				}
+
+				*/
 
 				for (unsigned int bodyIndex = 0; bodyIndex < _countof(bodies); bodyIndex++) {
 					safeRelease(bodies[bodyIndex]);
@@ -366,7 +408,7 @@ void Device::captureAndShow() {
 
 	}
 
-	// safeRelease(colorfra);
+	safeRelease(colorfra);
 
 }
 
@@ -383,8 +425,7 @@ void Device::recordColorData() {
 		if (SUCCEEDED(hResult)) {
 
 			printf("Camera acquired color frame ! \n");
-
-			//saveFrame(colorfra);
+			
 			saveFrameNew(colorfra);
 		}
 
@@ -417,9 +458,11 @@ void Device::imageAcquisitionToCalibrate() {
 
 }
 
-void Device::writeCSV(Joint *joints) {
+void Device::writeCSV(Joint *joints, int ctr) {
 
 	printf("Starting to write to the csv file \n");
+
+	//chrono::milliseconds begin = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
 
 	const CameraSpacePoint &leftHandPos = joints[JointType_HandLeft].Position;
 	const int leftHandTrackingState = joints[JointType_HandLeft].TrackingState;
@@ -427,8 +470,8 @@ void Device::writeCSV(Joint *joints) {
 	const CameraSpacePoint &rightHandPos = joints[JointType_HandRight].Position;
 	const int rightHandTrackingState = joints[JointType_HandRight].TrackingState;
 
-	const CameraSpacePoint &rightHandTip = joints[JointType_HandTipRight].Position;
-	const CameraSpacePoint &leftHandTip = joints[JointType_HandTipLeft].Position;
+	// const CameraSpacePoint &rightHandTip = joints[JointType_HandTipRight].Position;
+	// const CameraSpacePoint &leftHandTip = joints[JointType_HandTipLeft].Position;
 
 	const CameraSpacePoint &spineBase = joints[JointType_SpineBase].Position;
 	const CameraSpacePoint &spineMid = joints[JointType_SpineMid].Position;
@@ -446,20 +489,20 @@ void Device::writeCSV(Joint *joints) {
 	const CameraSpacePoint &rightWrist = joints[JointType_WristRight].Position;
 	const CameraSpacePoint &leftWrist = joints[JointType_WristLeft].Position;
 
-	const CameraSpacePoint &rightAnkle = joints[JointType_AnkleRight].Position;
-	const CameraSpacePoint &leftAnkle = joints[JointType_AnkleLeft].Position;
+	// const CameraSpacePoint &rightAnkle = joints[JointType_AnkleRight].Position;
+	// const CameraSpacePoint &leftAnkle = joints[JointType_AnkleLeft].Position;
 
 	const CameraSpacePoint &rightFoot = joints[JointType_FootRight].Position;
 	const CameraSpacePoint &leftFoot = joints[JointType_FootLeft].Position;
 
-	const CameraSpacePoint &rightHip = joints[JointType_HipRight].Position;
-	const CameraSpacePoint &leftHip = joints[JointType_HipLeft].Position;
+	// const CameraSpacePoint &rightHip = joints[JointType_HipRight].Position;
+	// const CameraSpacePoint &leftHip = joints[JointType_HipLeft].Position;
 
-	const CameraSpacePoint &rightKnee = joints[JointType_KneeRight].Position;
-	const CameraSpacePoint &leftKnee = joints[JointType_KneeLeft].Position;
+	// const CameraSpacePoint &rightKnee = joints[JointType_KneeRight].Position;
+	// const CameraSpacePoint &leftKnee = joints[JointType_KneeLeft].Position;
 
-	const CameraSpacePoint &rightThumb = joints[JointType_ThumbRight].Position;
-	const CameraSpacePoint &leftThumb = joints[JointType_ThumbLeft].Position;
+	// const CameraSpacePoint &rightThumb = joints[JointType_ThumbRight].Position;
+	// const CameraSpacePoint &leftThumb = joints[JointType_ThumbLeft].Position;
 
 	cout << "Successfull Frame ! " << endl;
 
@@ -471,16 +514,24 @@ void Device::writeCSV(Joint *joints) {
 
 	this->numMs = ms.count();
 
+	chrono::milliseconds begin = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
 	// 1 Write ms to the csv
 	fileHandler << this->numMs << ";";
+	
+	cout << "1" << endl;
 
 	// 2 Write Head position to the csv
 
 	fileHandler << headPos.X << " " << headPos.Y << " " << headPos.Z << ";";
 
+	cout << "2" << endl;
+
 	// 3 Write Neck position to the csv
 
 	fileHandler << neckPos.X << " " << neckPos.Y << " " << neckPos.Z << ";";
+
+	cout << "3" << endl;
 
 	// 4 Write Spine Shoulder to the csv
 
@@ -501,6 +552,8 @@ void Device::writeCSV(Joint *joints) {
 	// 8 Write left shoulder to the csv
 
 	fileHandler << leftShoulderPos.X << " " << leftShoulderPos.Y << " " << leftShoulderPos.Z << ";";
+
+	cout << "8" << endl;
 
 	// 9 Write right elbow to the csv
 
@@ -528,43 +581,47 @@ void Device::writeCSV(Joint *joints) {
 
 	// 15 Write right hand tips to the csv
 
-	fileHandler << rightHandTip.X << " " << rightHandTip.Y << " " << rightHandTip.Z << ";";
+	// fileHandler << rightHandTip.X << " " << rightHandTip.Y << " " << rightHandTip.Z << ";";
+
+	cout << "15" << endl;
 
 	// 16 Write left hand tips to the csv
 
-	fileHandler << leftHandTip.X << " " << leftHandTip.Y << " " << leftHandTip.Z << ";";
+	// fileHandler << leftHandTip.X << " " << leftHandTip.Y << " " << leftHandTip.Z << ";";
 
 	// 17 Write right thumb to the csv
 
-	fileHandler << rightThumb.X << " " << rightThumb.Y << " " << rightThumb.Z << ";";
+	// fileHandler << rightThumb.X << " " << rightThumb.Y << " " << rightThumb.Z << ";";
 
 	// 18 Write left thumb to the csv
 
-	fileHandler << leftThumb.X << " " << leftThumb.Y << " " << leftThumb.Z << ";";
+	// fileHandler << leftThumb.X << " " << leftThumb.Y << " " << leftThumb.Z << ";";
 
 	// 19 Write right hip to the csv
 
-	fileHandler << rightHip.X << " " << rightHip.Y << " " << rightHip.Z << ";";
+	// fileHandler << rightHip.X << " " << rightHip.Y << " " << rightHip.Z << ";";
 
 	// 20 Write left hip to the csv
 
-	fileHandler << leftHip.X << " " << leftHip.Y << " " << leftHip.Z << ";";
+	// fileHandler << leftHip.X << " " << leftHip.Y << " " << leftHip.Z << ";";
+
+	cout << "20" << endl;
 
 	// 21 Write right knee to the csv
 
-	fileHandler << rightKnee.X << " " << rightKnee.Y << " " << rightKnee.Z << ";";
+	// fileHandler << rightKnee.X << " " << rightKnee.Y << " " << rightKnee.Z << ";";
 
 	// 22 Write left knee to the csv
 
-	fileHandler << leftKnee.X << " " << leftKnee.Y << " " << leftKnee.Z << ";";
+	// fileHandler << leftKnee.X << " " << leftKnee.Y << " " << leftKnee.Z << ";";
 
 	// 23 Write right ankle to the csv
 
-	fileHandler << rightAnkle.X << " " << rightAnkle.Y << " " << rightAnkle.Z << ";";
+	// fileHandler << rightAnkle.X << " " << rightAnkle.Y << " " << rightAnkle.Z << ";";
 
 	// 24 Write left ankle to the csv
 
-	fileHandler << leftAnkle.X << " " << leftAnkle.Y << " " << leftAnkle.Z << ";";
+	// fileHandler << leftAnkle.X << " " << leftAnkle.Y << " " << leftAnkle.Z << ";";
 
 	// 25 Write right foot to the csv
 
@@ -574,16 +631,21 @@ void Device::writeCSV(Joint *joints) {
 
 	fileHandler << leftFoot.X << " " << leftFoot.Y << " " << leftFoot.Z << ";";
 
+	fileHandler << ctr << ";";
+
+	cout << "26" << endl;
+
 	// Alt satýra geçme
 
 	fileHandler << "\n";
 
+	chrono::milliseconds end = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+
+	std::cout << "Time difference in writing CSV in microseconds = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+
 }
 
-
 void Device::saveFrame(IColorFrame *frame) {
-
-	chrono::milliseconds begin = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
 
 	IFrameDescription *frameDesc;
 
@@ -616,6 +678,8 @@ void Device::saveFrame(IColorFrame *frame) {
 
 	hResult = frame->CopyConvertedFrameDataToArray(buf_size, color_mat.data, ColorImageFormat_Bgra);
 
+
+
 	// cv::imshow("Color", color_mat);
 
 	// cv::waitKey(10);
@@ -623,10 +687,6 @@ void Device::saveFrame(IColorFrame *frame) {
 	string mmm = to_string(this->numMs);
 
 	cv::imwrite("images/1"+mmm+".jpg", color_mat);
-
-	chrono::milliseconds end = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
-
-	std::cout << "Time difference in microseconds = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
 
 }
 
@@ -670,7 +730,7 @@ void Device::saveFrameNew(IColorFrame *frame) {
 
 	chrono::milliseconds end = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
 
-	std::cout << "Time difference in microseconds = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+	std::cout << "Time difference in recording RGB Image in microseconds = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
 
 }
 
